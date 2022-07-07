@@ -6,7 +6,7 @@ object ChatService {
 
     var checkId: Int = 1
 
-    fun getNextId() = checkId++
+    fun getNextId() = chats.size + 1
 
     fun addChat(chat: Chat) {
         chats.add(chat.copy(id = getNextId()))
@@ -29,9 +29,9 @@ object ChatService {
             chat.users.containsAll(listOf(firstUserId, secondUserId))
         }
             ?.let { chat ->
-                chat.copy(messages = chat.messages + message.copy(id = chat.messages.size + 1))
+                chat.copy(messages = chat.messages + message.copy(id = chat.messages.size + 1, isReaded = true))
             } ?: Chat(
-            id = 1,
+            id = getNextId(),
             users = listOf(firstUserId, secondUserId),
             messages = listOf(message)
         )
@@ -45,27 +45,25 @@ object ChatService {
         chats.add(newChat)
     }
 
-    fun getUnreadChatsCount() {
+    fun getUnreadChatsCount(): String {
         val unreadChats: List<Chat> = chats.filter { chat: Chat ->
             !chat.checkRead(chat)
         }
-        println(unreadChats.toString())
+        return unreadChats.toString()
     }
 
     fun Chat.checkRead(chat: Chat): Boolean {
-        chat.messages.filter { !it.isReaded }
-        val newChat = chat.copy(isRead = false)
-        chats[chat.id] = newChat
-        return false
+        val check: Boolean = chat.messages.all { it.isReaded }
+        return check
     }
 
-    fun getChats() {
+    fun getChats(): String {
         val warning: String = "No messages"
         val listPart: List<String> = chats
             .map { Chat ->
                 Chat.messages.lastOrNull().toString()
             }
-        println(listPart.toString())
+        return listPart.toString()
     }
 
     fun getMessageList(chatId: Int, lastMessageId: Int, messageNum: Int): String {
@@ -74,20 +72,24 @@ object ChatService {
         return MessageList.toString()
     }
 
-    fun deleteMessage(chatId: Int) {
+    fun deleteMessage(chatId: Int): Boolean {
         if (chats[chatId].messages.isNotEmpty()) {
-            chats[chatId] = chats[chatId].copy(messages = chats[chatId].messages.subList(0, chats[chatId].messages.size - 1))
-        } else{
+            chats[chatId] =
+                chats[chatId].copy(messages = chats[chatId].messages.subList(0, chats[chatId].messages.size - 1))
+            return true
+        } else {
             chats.removeAt(chatId)
+            return true
         }
     }
 
-    fun deleteChat(chatId: Int){
-        if(chats.size > chatId){
+    fun deleteChat(chatId: Int): Boolean {
+        if (chats.size > chatId) {
             chats.removeAt(chatId)
+            return true
         }
+        return false
     }
-
 
 
 }
